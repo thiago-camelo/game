@@ -1,0 +1,19 @@
+body {
+    height: 100vh;
+    background-color: #222738;
+    color: #6e7888;
+    font-family: "Poppins", sans-serif;
+}
+
+#container {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#canvas {
+    background-color: #f1f1f1;
+}
