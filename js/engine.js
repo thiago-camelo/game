@@ -26,14 +26,19 @@ function startGame() {
         
     })
 
-    
-    
+    window.addEventListener('keyup', function(event) {
 
+        if (event.key == 's')
+            myGamePiece.speedY = 0
 
+        if (event.key == 'w')
+            myGamePiece.speedY = 0
+        
+        if (event.key == 'd')
+            myGamePiece.speedX = 0
 
-    window.addEventListener('keyup', function() {
-        myGamePiece.speedX = 0
-        myGamePiece.speedY = 0
+        if (event.key == 'a')
+            myGamePiece.speedX = 0
     })
 
     myGameArea.start()
@@ -66,14 +71,27 @@ function component(width, height, color, x, y, type) {
         this.x += this.speedX
         this.y += this.speedY
 
-        this.hitBottom()
+        this.hitBorder()
     }
-    this.hitBottom = function () {
-        var rockbottom = myGameArea.canvas.height - this.height
-        if (this.y > rockbottom) {
-            this.y = rockbottom
-        }
+    this.hitBorder = function () {
+        
+        let hitRight = myGameArea.canvas.width - this.width
+        let hitBottom = myGameArea.canvas.height - this.height
+
+        if (this.x > hitRight)
+            this.x = hitRight
+        
+        if (this.y > hitBottom)
+            this.y = hitBottom
+
+        if (this.x < 0)
+            this.x = 0
+
+        if (this.y < 0)
+            this.y = 0
+
     }
+
     this.crashWith = function (otherobj) {
         let myleft      = this.x
         let myright     = this.x + this.width
