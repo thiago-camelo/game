@@ -1,7 +1,13 @@
 const express = require('express')
 const webApp = express()
 const webServer = require('http').createServer(webApp)
-const io = require('socket.io')(webServer)
+const io = require('socket.io')(webServer, {
+    cors: {
+        origin: 'http://localhost:8000',
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+})
 
 const game = createGame()
 
@@ -16,6 +22,8 @@ io.on('connection', function (socket) {
     })
 
     socket.on('player-move', (direction) => {
+
+        console.log('move to: ', direction)
 
         game.movePlayer(socket.id, direction)
 
@@ -43,7 +51,8 @@ function createGame() {
         canvasWidth: 800,
         canvasHeight: 500,
         players: {},
-        fruits: {},
+        objects: {},
+        step: 2,
         addPlayer: socketId => {
             return game.players[socketId] = {
                 x: Math.floor(Math.random() * game.canvasWidth),
@@ -55,23 +64,25 @@ function createGame() {
             delete game.players[socketId]
         },
         movePlayer: (socketId, direction) => {
-            
-            const player = this.players[socketId]
 
-            if (direction === 'left' && player.x - 2 >= 0) {
-                player.x = player.x - 2
+            const player = game.players[socketId]
+            
+            console.log(player)
+
+            if (direction === 'left' && player.x - game.step >= 0) {
+                player.x = player.x - game.step
             }
     
-            if (direction === 'up' && player.y - 2 >= 0) {
-                player.y = player.y - 2
+            if (direction === 'up' && player.y - game.step >= 0) {
+                player.y = player.y - game.step
             }
     
-            if (direction === 'right' && player.x + 2 < game.canvasWidth) {
-                player.x = player.x + 2
+            if (direction === 'right' && player.x + game.step < game.canvasWidth) {
+                player.x = player.x + game.step
             }
     
-            if (direction === 'down' && player.y + 2 < game.canvasHeight) {
-                player.y = player.y + 2
+            if (direction === 'down' && player.y + game.step < game.canvasHeight) {
+                player.y = player.y + game.step
             }
     
             return player

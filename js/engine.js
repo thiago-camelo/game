@@ -1,63 +1,114 @@
-let myGamePiece
+let game
+const socket = io('localhost:3000')
 
-function startGame() {
+socket.on('bootstrap', (gameInitialState) => {
 
-    console.log("starting game....")
+    console.log('conectado')
 
-    myGamePiece = new component(30, 30, "red", 10, 120)
-    myScore = new component("30px", "Consolas", "black", 280, 40, "text")
+    game = gameInitialState
 
-    // criar eventos das direções
+    game.canvas = document.getElementById("canvas")
+    
+    game.canvas.style.width = `${game.canvasWidth}px`
+    game.canvas.style.height = `${game.canvasHeight}px`
+    
+    game.context = game.canvas.getContext('2d')
+
+    game.render = () => {
+        
+        game.clear()
+        
+        // game.frameNo += 1
+        // text = "SCORE: " + Math.floor(game.frameNo / 15)
+        // myScore.update()
+        
+        for (const socketId in game.players) {
+            const player = game.players[socketId]
+            
+            if (!player.object) {
+                const color = player.socketId === socket.id ? 'red' : 'blue'
+                const object = new gameObject(30, 30, color, player.x, player.y)
+                player.object = object
+            }
+            
+            player.object.move()
+            player.object.update()
+        }
+
+        window.requestAnimationFrame(game.render)
+
+    }
+
+    game.clear = () => {
+        game.context.clearRect(0, 0, game.canvasWidth, game.canvasHeight)
+    }
+    
+
+    // user events
     document.addEventListener('keypress', function(event) {
         
-        console.log('i', event.key)
+        const player = game.players[socket.id]
 
-        if (event.key == 's')
-            myGamePiece.speedY = 2
+        console.log('event: ', event.key)
 
-        if (event.key == 'w')
-            myGamePiece.speedY = -2
+        if (event.key == 'a' && player.x - game.step >= 0)
+            socket.emit('player-move', 'left')
         
-        if (event.key == 'd')
-            myGamePiece.speedX = 2
+        if (event.key == 'w' && player.y - game.step >= 0)
+            socket.emit('player-move', 'up')
 
-        if (event.key == 'a')
-            myGamePiece.speedX = -2
+        if (event.key == 'd' && player.x + game.step < game.canvasWidth)
+            socket.emit('player-move', 'right')
+            
+        if (event.key == 's' && player.y + game.step < game.canvasHeight)
+            socket.emit('player-move', 'down')
         
     })
 
-    window.addEventListener('keyup', function(event) {
+    // socket events
+    socket.on('player-update', player => {
 
-        if (event.key == 's')
-            myGamePiece.speedY = 0
+        if (!game.players[player.socketId]) {
+            const color = player.socketId === socket.id ? 'red' : 'blue'
+            const object = new gameObject(30, 30, color, player.x, player.y)
+            game.players[player.socketId] = { object }
+        }
 
-        if (event.key == 'w')
-            myGamePiece.speedY = 0
+        game.players[player.socketId] = { 
+            ...game.players[player.socketId], 
+            ...player.newState
+        }
+
+        console.log('atualização...')
         
-        if (event.key == 'd')
-            myGamePiece.speedX = 0
-
-        if (event.key == 'a')
-            myGamePiece.speedX = 0
     })
 
-    myGameArea.start()
+    socket.on('player-remove', socketId => {
+        delete game.players[socketId]
+    })
 
-    window.requestAnimationFrame(updateGameArea)
+    // Game Obejcts
+    // new gameObject("30px", "Consolas", "black", 280, 40, "text")
 
-}
+    // start
+    setTimeout(() => {
+        window.requestAnimationFrame(game.render)
+    }, 1000)
 
-function component(width, height, color, x, y, type) {
+})
+
+
+function gameObject(width, height, color, x, y, type) {
+
     this.type = type
     this.score = 0
     this.width = width
     this.height = height
-    this.speedX = 0
-    this.speedY = 0
     this.x = x
     this.y = y
+
     this.update = function () {
-        ctx = myGameArea.context
+        ctx = game.context
         if (this.type == "text") {
             ctx.font = this.width + " " + this.height
             ctx.fillStyle = color
@@ -67,31 +118,12 @@ function component(width, height, color, x, y, type) {
             ctx.fillRect(this.x, this.y, this.width, this.height)
         }
     }
-    this.newPos = function () {
-        this.x += this.speedX
-        this.y += this.speedY
 
-        this.hitBorder()
+    this.move = function (x, y) {
+        this.x = x
+        this.y = y
     }
-    this.hitBorder = function () {
-        
-        let hitRight = myGameArea.canvas.width - this.width
-        let hitBottom = myGameArea.canvas.height - this.height
-
-        if (this.x > hitRight)
-            this.x = hitRight
-        
-        if (this.y > hitBottom)
-            this.y = hitBottom
-
-        if (this.x < 0)
-            this.x = 0
-
-        if (this.y < 0)
-            this.y = 0
-
-    }
-
+    
     this.crashWith = function (otherobj) {
         let myleft      = this.x
         let myright     = this.x + this.width
@@ -112,35 +144,5 @@ function component(width, height, color, x, y, type) {
         }
         return crash
     }
-}
-
-let myGameArea = {
-    canvas: document.getElementById("canvas"),
-    start: function () {
-        this.canvas.width = 800
-        this.canvas.height = 500
-        this.context = this.canvas.getContext("2d")
-        this.frameNo = 0
-    },
-    clear: function () {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    },
-}
-
-function updateGameArea() {
-    
-    let x, height, gap, minHeight, maxHeight, minGap, maxGap
-    
-    myGameArea.clear()
-    myGameArea.frameNo += 1
-    
-    myScore.text = "SCORE: " + myGameArea.frameNo
-    myScore.update()
-    myGamePiece.newPos()
-    myGamePiece.update()
-
-    window.requestAnimationFrame(updateGameArea)
 
 }
-
-startGame()
