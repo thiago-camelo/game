@@ -1,9 +1,10 @@
+require('dotenv').config();
 const express = require('express')
 const webApp = express()
 const webServer = require('http').createServer(webApp)
 const io = require('socket.io')(webServer, {
     cors: {
-        origin: 'http://localhost:8000',
+        origin: process.env.LOCALHOST || 'http://localhost:8000',
         methods: ['GET', 'POST'],
         credentials: true
     }
@@ -20,13 +21,15 @@ io.on('connection', function (socket) {
         socketId: socket.id,
         newState: playerState
     })
-
+    
     socket.on('player-move', (direction) => {
 
         console.log('move to: ', direction)
 
         game.movePlayer(socket.id, direction)
 
+        console.log('depois de mover: ', game.players[socket.id]);
+        
         socket.broadcast.emit('player-update', {
             socketId: socket.id,
             newState: game.players[socket.id]
@@ -57,7 +60,8 @@ function createGame() {
             return game.players[socketId] = {
                 x: Math.floor(Math.random() * game.canvasWidth),
                 y: Math.floor(Math.random() * game.canvasHeight),
-                score: 0
+                score: 0,
+                socketId: socketId
             }
         },
         removePlayer: socketId => {

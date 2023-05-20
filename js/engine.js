@@ -5,14 +5,21 @@ socket.on('bootstrap', (gameInitialState) => {
 
     console.log('conectado')
 
+    console.log('Game', gameInitialState);
+
     game = gameInitialState
 
-    game.canvas = document.getElementById("canvas")
+    game.start = () => {
+        game.canvas = document.createElement('canvas');
+        game.canvas.setAttribute('id', 'canvas');
+        game.canvas.width = `${game.canvasWidth}`
+        game.canvas.height = `${game.canvasHeight}`        
+        game.context = game.canvas.getContext('2d')
+
+        document.querySelector('#container').appendChild(game.canvas);
+    };
     
-    game.canvas.style.width = `${game.canvasWidth}px`
-    game.canvas.style.height = `${game.canvasHeight}px`
-    
-    game.context = game.canvas.getContext('2d')
+    game.start();
 
     game.render = () => {
         
@@ -23,15 +30,18 @@ socket.on('bootstrap', (gameInitialState) => {
         // myScore.update()
         
         for (const socketId in game.players) {
-            const player = game.players[socketId]
+
+            const player = game.players[socketId];
             
             if (!player.object) {
-                const color = player.socketId === socket.id ? 'red' : 'blue'
+                const color = socketId === socket.id ? 'red' : 'blue'
+
                 const object = new gameObject(30, 30, color, player.x, player.y)
-                player.object = object
+
+                player.object = object                
             }
             
-            player.object.move()
+            player.object.move(player.x, player.y)
             player.object.update()
         }
 
@@ -41,8 +51,7 @@ socket.on('bootstrap', (gameInitialState) => {
 
     game.clear = () => {
         game.context.clearRect(0, 0, game.canvasWidth, game.canvasHeight)
-    }
-    
+    }    
 
     // user events
     document.addEventListener('keypress', function(event) {
@@ -51,17 +60,25 @@ socket.on('bootstrap', (gameInitialState) => {
 
         console.log('event: ', event.key)
 
-        if (event.key == 'a' && player.x - game.step >= 0)
+        if (event.key == 'a' && player.x - game.step >= 0) {
+            player.x = player.x - game.step;
             socket.emit('player-move', 'left')
+        }
         
-        if (event.key == 'w' && player.y - game.step >= 0)
+        if (event.key == 'w' && player.y - game.step >= 0) {
+            player.y = player.y - game.step;
             socket.emit('player-move', 'up')
+        }
 
-        if (event.key == 'd' && player.x + game.step < game.canvasWidth)
+        if (event.key == 'd' && player.x + game.step < game.canvasWidth){
+            player.x = player.x + game.step;
             socket.emit('player-move', 'right')
+        }
             
-        if (event.key == 's' && player.y + game.step < game.canvasHeight)
+        if (event.key == 's' && player.y + game.step < game.canvasHeight) {
+            player.y = player.y + game.step
             socket.emit('player-move', 'down')
+        }
         
     })
 
@@ -79,8 +96,7 @@ socket.on('bootstrap', (gameInitialState) => {
             ...player.newState
         }
 
-        console.log('atualização...')
-        
+        console.log('atualização...');        
     })
 
     socket.on('player-remove', socketId => {
@@ -97,15 +113,15 @@ socket.on('bootstrap', (gameInitialState) => {
 
 })
 
-
 function gameObject(width, height, color, x, y, type) {
 
-    this.type = type
-    this.score = 0
     this.width = width
     this.height = height
     this.x = x
     this.y = y
+    this.type = type
+    this.score = 0
+    this.color = color
 
     this.update = function () {
         ctx = game.context
