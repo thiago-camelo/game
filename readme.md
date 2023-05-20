@@ -85,8 +85,18 @@ let json_circuitos = {
 				// ai tipo, se o mapa nao faz diferenca, ai usa o atributo base do item, sem vantagem/desvantagem (hahahaha)
 				// entendikkkkk onus sei la. ok Sr
 				// bora dormir
-				// vou colocar isso no readme.md do proeto ok?
-    		]
+				// vou colocar isso no readme.md do proeto ok? ok... depoois escrevo melhor o que pensei, acho que vai ficar legal.
+				// as ideias vao vindo e eu so vou colocando para fora kkkk
+
+				// Para nao ficar exaustivo criando regra nos itens/mapas, poderia simplesmente criar uma regra geral, item gelo com mapa gelo (bonus) etc...
+    			// realmente. faz sentido
+				// cada fase, só add os fatores e cada item/obj verifica esses fatores
+				// Sim, exatamente, evita trabalho... kkkkk - Bom vou dormir cara... amanha acho que entro quando acordar, qualquer coisa da um salve...
+				// blz, vou no centro cedo, umas 10/11 to de volta coisa rapida
+				// flw
+									// flllw < tab lixo > horrivel
+
+			]
       	},
         mapa2: {
       		velocidade_base: 3, // quase isso né?
