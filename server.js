@@ -14,6 +14,8 @@ const game = createGame()
 
 io.on('connection', function (socket) {
 
+    console.log('New connection: ', socket.id);
+
     const playerState = game.addPlayer(socket.id)
     socket.emit('bootstrap', game)
 
