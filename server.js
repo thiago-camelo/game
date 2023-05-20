@@ -4,7 +4,7 @@ const webApp = express()
 const webServer = require('http').createServer(webApp)
 const io = require('socket.io')(webServer, {
     cors: {
-        origin: process.env.LOCALHOST || 'http://localhost:8000',
+        origin: process.env.LOCALHOST || 'https://brothersgames.online', 
         methods: ['GET', 'POST'],
         credentials: true
     }
