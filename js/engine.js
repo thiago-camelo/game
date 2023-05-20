@@ -1,5 +1,8 @@
+
+const hostname = window.location.hostname;
+
+const socket = io(`${hostname}:3000`);
 let game
-const socket = io('localhost:3000')
 
 socket.on('bootstrap', (gameInitialState) => {
 
